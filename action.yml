@@ -1,4 +1,4 @@
-name: "Build and Test TS/JS Applications"
+name: "Build and Test TS/JS"
 description: "Universal Action to build and test any TS/JS application"
 
 inputs:

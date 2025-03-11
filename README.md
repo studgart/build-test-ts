@@ -1,4 +1,4 @@
-# Build and Test TS/JS Applications
+# Build and Test TS/JS
 
 - [Build and Test TS/JS Application](#tag-semver-action)
   - [Input Parameters](#build-and-test-tsjs-applications)
