@@ -1,0 +1,100 @@
+name: "Build and Test TS/JS Applications"
+description: "Universal Action to build and test any TS/JS application"
+
+inputs:
+  working-directory:
+    description: "Path to the project directory"
+    required: false
+    default: "."
+  package-manager:
+    description: "Package manager (npm | yarn | pnpm)"
+    required: false
+    default: "npm"
+  node-version:
+    description: "Node.js version"
+    required: false
+    default: "20"
+  run-sonar-test:
+    description: "Run SonarQube test"
+    required: false
+    default: "false"
+  sonar-token:
+    description: "SonarCloud token"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        case "${{ inputs.package-manager }}" in
+          yarn)
+            corepack enable
+            yarn install
+            ;;
+          pnpm)
+            corepack enable
+            pnpm install
+            ;;
+          *)
+            npm install
+            ;;
+        esac
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Run build (if script exists)
+      shell: bash
+      run: |
+        if [ -f package.json ] && jq -e '.scripts.build' package.json > /dev/null; then
+          case "${{ inputs.package-manager }}" in
+            yarn)
+              yarn build
+              ;;
+            pnpm)
+              pnpm build
+              ;;
+            *)
+              npm run build
+              ;;
+          esac
+        else
+          echo "No build script found – skipping build step."
+        fi
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Run tests (if script exists)
+      shell: bash
+      run: |
+        if [ -f package.json ] && jq -e '.scripts.test' package.json > /dev/null; then
+          case "${{ inputs.package-manager }}" in
+            yarn)
+              yarn test
+              ;;
+            pnpm)
+              pnpm test
+              ;;
+            *)
+              npm run test
+              ;;
+          esac
+        else
+          echo "No test script found – skipping test step."
+        fi
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: SonarQube Scan
+      if: ${{ inputs.run-sonar-test == 'true' }}
+      uses: SonarSource/sonarqube-scan-action@v4.2.1
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
