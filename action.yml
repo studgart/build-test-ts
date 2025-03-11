@@ -1,6 +1,10 @@
 name: "Build and Test TS/JS"
 description: "Universal Action to build and test any TS/JS application"
 
+branding:
+  icon: "anchor"
+  color: "blue"
+
 inputs:
   working-directory:
     description: "Path to the project directory"
